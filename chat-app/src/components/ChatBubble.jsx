@@ -8,7 +8,7 @@ const ChatBubble = ({ message, text }) => {
   const ref = useRef();
 
   useEffect(() => {
-    
+    ref.current?.scrollIntoView({ behavior: "smooth" , block: "end", inline: "nearest" });
   }, [message]);
   return (
     <div
