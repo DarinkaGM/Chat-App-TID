@@ -19,7 +19,7 @@ const MessageModal = ({ show }) => {
   const [err, setErr] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const { userLogged } = useContext(AuthContext);
-
+  var c = 1;
   const handleSearch = async () => {
     if (username != "") {
       const filter = query(
@@ -42,7 +42,6 @@ const MessageModal = ({ show }) => {
           userFound(false);
         }
       }
-      // console.log("search array:" + JSON.stringify(searchResults) + "length: " + (searchResults.length));
       setUsername("");
     }
   };
@@ -52,7 +51,6 @@ const MessageModal = ({ show }) => {
 
   };
 
-  // console.log("selected array:" + JSON.stringify(usersSelected) + "length: " + (usersSelected.length));
   const createChat = async () => {
     const chatsId = userLogged.uid > usersSelected[0].uid ? userLogged.uid + usersSelected[0].uid : usersSelected[0].uid + userLogged.uid
     try {
@@ -85,103 +83,84 @@ const MessageModal = ({ show }) => {
     userFound(false);
   };
 
-  const createGroup = async () => {
-    var user1 = usersSelected[0];
-    var user2 = usersSelected[1];
 
+  const createGroup = async (user) => {
+    // var str = '.messageReceiver'+ c++; 
     const chatsId = groupname.replace(/\s/g, '');
-    try {
-      const res = await getDoc(doc(db, "chats", chatsId));
-      if (!res.exists()) {
-        await setDoc(doc(db, "chats", chatsId), { messages: [] });
-        await updateDoc(doc(db, "groupChat", userLogged.uid), {
-          [chatsId + ".groupName"]:{
-            name: groupname,
-          },
-          [chatsId + ".messageReceiver1"]: {
-            uid: user1.uid,
-            displayName: user1.displayName,
-            email: user1.email,
-          },
-          [chatsId + ".messageReceiver2"]: {
-            uid: user2.uid,
-            displayName: user2.displayName,
-            email: user2.email,
-          },
-          [chatsId + ".groupOwner"]: {
-            uid: userLogged.uid
-          },
-          [chatsId + ".sender"]: {
-            name: userLogged.displayName,
-          }
-        });
-        await updateDoc(doc(db, "groupChat", user1.uid), {
-          [chatsId + ".groupName"]:{
-            name: groupname,
-          },
-          [chatsId + ".messageReceiver1"]: {
-            uid: userLogged.uid,
-            displayName: userLogged.displayName,
-            email: userLogged.email,
-          },
-          [chatsId + ".messageReceiver2"]: {
-            uid: user2.uid,
-            displayName: user2.displayName,
-            email: user2.email,
-          },
-          [chatsId + ".groupOwner"]: {
-            uid: userLogged.uid
-          },
-          [chatsId + ".sender"]: {
-            name: user1.displayName,
-          }
-        });
-        await updateDoc(doc(db, "groupChat", usersSelected[1].uid), {
-          [chatsId + ".groupName"]:{
-            name: groupname,
-          },
-          [chatsId + ".messageReceiver1"]: {
-            uid: userLogged.uid,
-            displayName: userLogged.displayName,
-            email: userLogged.email,
-          },
-          [chatsId + ".messageReceiver2"]: {
-            uid: user1.uid,
-            displayName: user1.displayName,
-            email: user1.email,
-          },
-          [chatsId + ".groupOwner"]: {
-            uid: userLogged.uid
-          },
-          [chatsId + ".sender"]: {
-            name: user2.displayName,
-          }
-        });
+    console.log("Creating chat for user " + user.displayName)
+    await setDoc(doc(db, "chats", chatsId), { messages: [] });
+    
+    const data = {
+      [chatsId + ".groupName"]: {
+        name: groupname,
+      },
+      [chatsId + ".groupOwner"]: {
+        uid: userLogged.uid
+      },
+      [chatsId + ".sender"]: {
+        name: user.displayName,
       }
-    } catch (err) { }
+    };
+    try {
+      console.log(data);
+      usersSelected.map((u) => {
+        updateGroup(u);
+      })
+      await updateDoc(doc(db, "groupChat", user.uid), data);
+      c = 1;
+      console.log("success");
+    } catch (error) {
+      console.log("some error");
+    }
     setUserSelected(null);
     userFound(false);
     setGroupName("");
   };
 
-  const handleChatCreation = async () => {
+  const updateGroup = async (u) => {
+    var str = '.messageReceiver'+ c++; 
+    const chatsId = groupname.replace(/\s/g, '');
+    const data = {
+      [chatsId + str]: {
+        uid: u.uid,
+        displayName: u.displayName,
+        email: u.email,
+      },
+    };
+    try {
+      console.log(data);
+      await updateDoc(doc(db, "groupChat", u.uid), data);
+      if(c==usersSelected.length){
+        c = 1;
+      }
+      console.log("success second loop");
+    } catch (error) {
+      console.log("some error");
+    }
+  };
 
+  const handleChatCreation = async () => {
     if (((usersSelected.length - 1) == 1) && (groupname != "")) { //if there are 2 recievers
       const res = await getDoc(doc(db, "chats", groupname));
       try {
-        if(groupname.length < 5){
+        if (groupname.length < 5) {
           alert("Please select group name with at least 5 characters");
         } else if (res.exists()) {
           alert("Please use another group name");
         } else {
-          await createGroup();
+          usersSelected.push(userLogged);
+
+          {
+            usersSelected.map((u) => (
+              createGroup(u)))
+          };
         }
       } catch (error) {
-        
+
       }
-     
+
     } else if (((usersSelected.length - 1) == 0)) { //if there's just 1
-        await createChat();  
+      await createChat();
     }
     show(false);
   }
@@ -218,19 +197,19 @@ const MessageModal = ({ show }) => {
             <InputField className="add-input" placeholder="Receiver's ITU e-mail" onKeyDown={handleKey}
               onChange={(e) => setUsername(e.target.value)} value={username}>
             </InputField>
-    
-              {(usersSelected != null) ? (
-                <span>
-                  {usersSelected.map((u, idx) => <MailTag text={u.email} onClick={() => handleSelect2(u, idx)}></MailTag>)}
-                </span>
-              ) : (null)}
-            
-              {foundUser ? (
-                <ul>
-                  {searchResults.map((u, idx) => <UserInfo onClick={() => handleSelect(u, idx)} key={u.uid} displayName={u.displayName} uid={u.uid} value={username} email={u.email} idx={idx} />)}
-                </ul>
-              ) : (null)}
-  
+
+            {(usersSelected != null) ? (
+              <span>
+                {usersSelected.map((u, idx) => <MailTag text={u.email} onClick={() => handleSelect2(u, idx)}></MailTag>)}
+              </span>
+            ) : (null)}
+
+            {foundUser ? (
+              <ul>
+                {searchResults.map((u, idx) => <UserInfo onClick={() => handleSelect(u, idx)} key={u.uid} displayName={u.displayName} uid={u.uid} value={username} email={u.email} idx={idx} />)}
+              </ul>
+            ) : (null)}
+
           </div>
         </div>
         {(usersSelected.length > 1) ? <InputField className="add-group-name" placeholder="Goup name" onKeyDown={handleKey}
