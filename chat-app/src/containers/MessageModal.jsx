@@ -19,7 +19,7 @@ const MessageModal = ({ show }) => {
   const [err, setErr] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const { userLogged } = useContext(AuthContext);
-  var c = 1;
+  var c = 0;
   const handleSearch = async () => {
     if (username != "") {
       const filter = query(
@@ -48,7 +48,6 @@ const MessageModal = ({ show }) => {
 
   const handleKey = (e) => {
     e.code === "Enter" && handleSearch();
-
   };
 
   const createChat = async () => {
@@ -85,11 +84,12 @@ const MessageModal = ({ show }) => {
 
 
   const createGroup = async (user) => {
+
     // var str = '.messageReceiver'+ c++; 
     const chatsId = groupname.replace(/\s/g, '');
     console.log("Creating chat for user " + user.displayName)
     await setDoc(doc(db, "chats", chatsId), { messages: [] });
-    
+
     const data = {
       [chatsId + ".groupName"]: {
         name: groupname,
@@ -102,12 +102,16 @@ const MessageModal = ({ show }) => {
       }
     };
     try {
-      console.log(data);
-      usersSelected.map((u) => {
-        updateGroup(u);
-      })
+      // console.log(data);
+    
       await updateDoc(doc(db, "groupChat", user.uid), data);
-      c = 1;
+      // c = 1;
+      // if(c>=usersSelected.length){
+      //   c = 0;
+      // } 
+       usersSelected.map((u, idx) => {
+        updateGroup(u, idx);
+      })
       console.log("success");
     } catch (error) {
       console.log("some error");
@@ -115,25 +119,30 @@ const MessageModal = ({ show }) => {
     setUserSelected(null);
     userFound(false);
     setGroupName("");
+    // c=0;
   };
 
-  const updateGroup = async (u) => {
-    var str = '.messageReceiver'+ c++; 
+  const updateGroup = async (u, idx) => {
+    // c++;
+    var str = '.messageReceiver' + idx;
     const chatsId = groupname.replace(/\s/g, '');
     const data = {
       [chatsId + str]: {
-        uid: u.uid,
-        displayName: u.displayName,
-        email: u.email,
+        uid: usersSelected[idx].uid,
+        displayName: usersSelected[idx].displayName,
+        email: usersSelected[idx].email,
       },
     };
     try {
-      console.log(data);
-      await updateDoc(doc(db, "groupChat", u.uid), data);
-      if(c==usersSelected.length){
-        c = 1;
-      }
-      console.log("success second loop");
+      // console.log(data);
+      usersSelected.map((u, idx) => {
+         updateDoc(doc(db, "groupChat", usersSelected[idx].uid), data);
+      })
+    
+      // if(c>=usersSelected.length){
+      //   c = 0;
+      // }
+      console.log("success second loop for user" + usersSelected[idx].displayName);
     } catch (error) {
       console.log("some error");
     }
