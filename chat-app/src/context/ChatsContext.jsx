@@ -6,11 +6,14 @@ export const ChatsContext = createContext();
 export const ChatsContextProvider = ({ children }) => {
   const { userLogged } = useContext(AuthContext);
   const INITIAL_STATE = {
-    chatsId: "null",
-    user1: null,
-    user2: null,
-    group: null,
-    owner: null,
+    chatsId: "",
+    user1: "",
+    user2: "",
+    user3: "",
+    user4: "",
+    user5: "",
+    group: "",
+    owner: "",
   };
 
   const chatReducer = (state, action) => {
@@ -27,16 +30,22 @@ export const ChatsContextProvider = ({ children }) => {
         return {
           user1: action.payload,
           user2: action.payload2,
-          group: action.payload3,
-          chatsId: action.payload3.name.replace(/\s/g, ""),
+          user3: action.payload3,
+          user4: action.payload4,
+          user5: action.payload5,
+          group: action.payload6,
+          chatsId: action.payload6.name.replace(/\s/g, ""),
         };
 
       case "TWO_USER_OWNER":
         return {
           user1: action.payload,
           user2: action.payload2,
-          group: action.payload3,
-          chatsId: action.payload3.name.replace(/\s/g, ""),
+          user3: action.payload3,
+          user4: action.payload4,
+          user5: action.payload5,
+          group: action.payload6,
+          chatsId: action.payload6.name.replace(/\s/g, ""),
         };
       default:
         return state;

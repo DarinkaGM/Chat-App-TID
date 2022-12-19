@@ -9,7 +9,7 @@ const MailTag = ({ onClick, text, icon, value }) => {
         value={value}
         text={text}
         icon={<ClearIcon sx={{ fontSize: 12 }} />}
-        className={"fluid-btn secondary tiny with-icon"}
+        className={"fixed-btn secondary tiny with-icon"}
         onClick={onClick}
       >
         {text} {icon}

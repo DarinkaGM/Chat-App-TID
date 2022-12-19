@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { AuthContext } from "../context/AuthContext";
 import { auth } from "../firebase";
+import LogoutSharpIcon from '@mui/icons-material/LogoutSharp';
 import "../styles.css";
 import "../buttons.css";
 
@@ -18,15 +19,14 @@ const NavBar = () => {
     <nav className="nav-bar">
       <div className="navbar-wrapper">
         <span className="logo-nav">I T U C H A T</span>
-        <span>{userLogged.displayName}</span>
         <Button
-          text="Logout"
-          className="fixed-btn secondary-white small"
+          text={userLogged.displayName}
+          icon={<LogoutSharpIcon />}
+          className="fixed-btn secondary-white small with-icon"
           onClick={() => {
             signOut(auth);
             toLogin();
           }}
-          icon={""}
         ></Button>
       </div>
     </nav>

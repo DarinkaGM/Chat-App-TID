@@ -5,7 +5,7 @@ import "../styles.css";
 import "../buttons.css";
 import { AuthContext } from "../context/AuthContext";
 import { ChatsContext } from "../context/ChatsContext";
-import { arrayUnion, doc, updateDoc, getDoc, serverTimestamp, Timestamp } from "firebase/firestore";
+import { arrayUnion, updateDoc, getDoc, serverTimestamp, Timestamp, doc } from "firebase/firestore";
 import { db } from "../firebase";
 import { v4 as uuid } from "uuid";
 
@@ -21,12 +21,12 @@ const SendMessage = () => {
   const handleSend = async () => {
     if (text != "") {
       try {
-        const res = await getDoc(doc(db, "chats", data.chatsId));
-        if (res.exists()) {
-          console.log("exists", res);
-        } else {
-          console.log("doesnt exist");
-        }
+        // const res = await getDoc(doc(db, "chats", data.chatsId));
+        // if (res.exists()) {
+        //   console.log("exists", res);
+        // } else {
+        //   console.log("doesnt exist");
+        // }
 
         await updateDoc(doc(db, "chats", data.chatsId), {
           messages: arrayUnion({
@@ -82,6 +82,36 @@ const SendMessage = () => {
               date: serverTimestamp(),
             },
           });
+          if (data.user3 != ""){
+            await updateDoc(doc(db, "groupChat", data.user3.uid), {
+              [data.chatsId + ".lastMessage"]: {
+                message: text,
+              },
+              [data.chatsId + ".date"]: {
+                date: serverTimestamp(),
+              },
+            });
+          }
+          if (data.user4 != ""){
+            await updateDoc(doc(db, "groupChat", data.user4.uid), {
+              [data.chatsId + ".lastMessage"]: {
+                message: text,
+              },
+              [data.chatsId + ".date"]: {
+                date: serverTimestamp(),
+              },
+            });
+          }
+          if (data.user5 != ""){
+            await updateDoc(doc(db, "groupChat", data.user5.uid), {
+              [data.chatsId + ".lastMessage"]: {
+                message: text,
+              },
+              [data.chatsId + ".date"]: {
+                date: serverTimestamp(),
+              },
+            });
+          }
         }
       } catch (err) {
         console.log("error");
